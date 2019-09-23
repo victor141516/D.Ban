@@ -1,7 +1,7 @@
 # D.Ban (_/di bæn/_)
 
 Super simple (no external dependencies) **not production intended** DB\
-I don't know how many keys it can handle ¯\\_(ツ)_/¯
+I don't know how many keys it can handle ¯\\\_(ツ)\_/¯
 
 ## Usage
 

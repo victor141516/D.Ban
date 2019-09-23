@@ -1,6 +1,6 @@
 # D.Ban (_/di bæn/_)
 
-Super simple (no external dependencies) **not production intended** DB\
+Super simple (no external dependencies) **not intended for production** DB\
 I don't know how many keys it can handle ¯\\\_(ツ)\_/¯
 
 ## Usage

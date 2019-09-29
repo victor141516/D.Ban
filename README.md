@@ -39,3 +39,8 @@ Then use it with:
 
 {"error":"key_not_found"}
 ```
+```
+❯ curl -s -X GET 'http://localhost:3000/filter?where=age>25&where=name:Jon%20Snow'
+
+[{"name":"Jon Snow","_id":"01690720cb339d3479bbc76ab7ed34eb","_created":1569260354219,"_modified":1569260354219}]
+```

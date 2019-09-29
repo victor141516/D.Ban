@@ -61,6 +61,36 @@ function handlePost(_, body, res) {
     res.end();
 }
 
+function handleFilter(queryParts, res) {
+    if (VERBOSE) console.log('FILTER:', queryParts);
+    const filters = queryParts.map(p => {
+        const [type, filter ]= p.split('=');
+        const [field, a] = filter.split(/(?=[:<>~])/);
+        const value = a.substring(1);
+        const operator = a.substring(0,1);
+
+        return {type, field, operator, value};
+    });
+    let results = Object.values(DATA);
+    filters.forEach(({type, field, operator, value}) => {
+        if (type === 'where') {
+            results = results.filter(d => {
+                if (operator === ':') {
+                    return d[field] === value;
+                } else if (operator === '>') {
+                    return d[field] > value;
+                } else if (operator === '<') {
+                    return d[field] < value;
+                } else if (operator === '~') {
+                    return RegExp(value).test(d[field]);
+                }
+            })
+        }
+    });
+    res.write(JSON.stringify(results));
+    res.end();
+}
+
 function handleGet(key, body, res) {
     if (VERBOSE) console.log('GET:', key);
     const value = _readData(key);
@@ -116,15 +146,24 @@ http.createServer(function (req, res) {
         body += chunk.toString();
     });
     res.setHeader('content-type', 'application/json');
-    const key = req.url.substring(1)
+    const path = req.url.substring(1)
+    const pathParts = path.split('/');
+    const maybeQueryString = pathParts[pathParts.length-1].split('?');
+    pathParts[pathParts.length-1] = maybeQueryString[0];
+    const queryParts = maybeQueryString.length > 1 ? decodeURI(maybeQueryString[1]).split('&') : [];
+
     if (req.method === 'POST') {
-        req.on('end', () => handlePost(key, body, res));
+        req.on('end', () => handlePost(pathParts[0], body, res));
     } else if (req.method === 'GET') {
-        req.on('end', () => handleGet(key, body, res));
+        if (pathParts[0] === 'filter') {
+            req.on('end', () => handleFilter(queryParts, res));
+        } else {
+            req.on('end', () => handleGet(pathParts[0], body, res));
+        }
     } else if (req.method === 'PUT' || req.method === 'PATCH') {
-        req.on('end', () => handlePatch(key, body, res));
+        req.on('end', () => handlePatch(pathParts[0], body, res));
     } else if (req.method === 'DELETE') {
-        req.on('end', () => handleDelete(key, body, res));
+        req.on('end', () => handleDelete(pathParts[0], body, res));
     } else {
         res.statusCode = 405;
         res.write(JSON.stringify({error: 'method_not_allowed'}));
